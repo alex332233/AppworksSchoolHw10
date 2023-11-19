@@ -21,3 +21,9 @@ npm run test:hardhat
 npm run test:foundry
 ```
 
+## HW description
+Implement SimpleSwap swap function and addLiquidity function.
+Please test SimpleSwap.sol with foundry.
+```
+forge test
+```
