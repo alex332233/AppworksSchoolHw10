@@ -77,7 +77,6 @@ contract SimpleSwap is ISimpleSwap, ERC20 {
         require(amountAIn > 0, "SimpleSwap: INSUFFICIENT_INPUT_AMOUNT");
         require(amountBIn > 0, "SimpleSwap: INSUFFICIENT_INPUT_AMOUNT");
 
-        // 假設1:1兌換，不考慮手續費
         amountA = amountAIn;
         amountB = amountBIn;
 
@@ -101,27 +100,28 @@ contract SimpleSwap is ISimpleSwap, ERC20 {
             if (rAaB == aRbB) {
                 tokenA.transferFrom(msg.sender, address(this), amountA);
                 tokenB.transferFrom(msg.sender, address(this), amountB);
-                liquidity = Math.sqrt(amountA * amountB);
-                emit AddLiquidity(msg.sender, amountA, amountB, liquidity);
             }
             // test_addLiquidity_when_tokenA_proportion_is_greaterThan_tokenB_proportion
             else if (rAaB > aRbB) {
                 amountB = (amountA * reserveB) / reserveA;
                 tokenA.transferFrom(msg.sender, address(this), amountA);
                 tokenB.transferFrom(msg.sender, address(this), amountB);
-                liquidity = Math.sqrt(amountA * amountB);
-                emit AddLiquidity(msg.sender, amountA, amountB, liquidity);
             }
             // test_addLiquidity_when_tokenA_proportion_is_lessThan_tokenB_proportion
             else if (rAaB < aRbB) {
                 amountA = (amountB * reserveA) / reserveB;
                 tokenA.transferFrom(msg.sender, address(this), amountA);
                 tokenB.transferFrom(msg.sender, address(this), amountB);
-                liquidity = Math.sqrt(amountA * amountB);
-                emit AddLiquidity(msg.sender, amountA, amountB, liquidity);
             }
+
+            uint256 liquidityA = (amountA * totalSupply()) / reserveA;
+            uint256 liquidityB = (amountB * totalSupply()) / reserveB;
+            liquidity = liquidityA < liquidityB ? liquidityA : liquidityB;
         }
+
+        _mint(msg.sender, liquidity);
         // 發送AddLiquidity事件
+        emit AddLiquidity(msg.sender, amountA, amountB, liquidity);
 
         return (amountA, amountB, liquidity);
     }
